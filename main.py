@@ -3,24 +3,23 @@ import requests
 import streamlit.components.v1 as components
 import json
 
-# --- 1. НАСТРОЙКИ БАЗЫ ---
+# --- 1. ПАРАМЕТРЛЕР (Өзгертпеңіз) ---
 URL = "https://bjqoazdkiyhrdrfkkgaz.supabase.co"
 KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJqcW9hemRraXlocmRyZmtrZ2F6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk3NTM4NjIsImV4cCI6MjA4NTMyOTg2Mn0.0t4S6fa9CmYa6WBdDvkVr4V4H91wLx9xLYtcEdriX4I"
-TABLE_NAME = "sor_8_rus"
+TABLE_NAME = "sor_8_rus" # Кесте аты сол күйі қалды
 
-st.set_page_config(page_title="СОР ПО ФИЗИКЕ - 8 КЛАСС", layout="wide", page_icon="⚡")
+st.set_page_config(page_title="ФИЗИКА: ҚЫСЫМ ТАҚЫРЫБЫНА СОР", layout="wide", page_icon="⚖️")
 
 if 'submitted' not in st.session_state:
     st.session_state.submitted = False
 
-# --- 2. СТИЛЬ ---
+# --- 2. СТИЛЬ (Дизайн) ---
 st.markdown("""
     <style>
     * { -webkit-user-select: none; user-select: none; } 
-    .stApp { background-color: #f8f9fa; }
-    .stRadio > div { background-color: white; padding: 20px; border-radius: 15px; border: 1px solid #dee2e6; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 10px; }
-    .stTextArea textarea { font-size: 16px; border-radius: 10px; }
-    .main-title { color: #1e3a8a; text-align: center; font-weight: 800; }
+    .stApp { background-color: #f0f2f6; }
+    .main-title { color: #2c3e50; text-align: center; font-weight: 800; padding: 20px; border-bottom: 3px solid #3498db; }
+    .question-box { background-color: white; padding: 20px; border-radius: 10px; border-left: 5px solid #3498db; margin-bottom: 20px; box-shadow: 2px 2px 10px rgba(0,0,0,0.1); }
     </style>
 """, unsafe_allow_html=True)
 
@@ -28,23 +27,23 @@ def send_data(payload):
     headers = {"apikey": KEY, "Authorization": f"Bearer {KEY}", "Content-Type": "application/json"}
     return requests.post(f"{URL}/rest/v1/{TABLE_NAME}", json=payload, headers=headers)
 
-# --- 3. ГЛАВНАЯ СТРАНИЦА ---
-st.markdown("<h1 class='main-title'>⚡ ФИЗИКА 8 КЛАСС: СОР (Суммативное оценивание)</h1>", unsafe_allow_html=True)
+# --- 3. НЕГІЗГІ БЕТ ---
+st.markdown("<h1 class='main-title'>⚖️ ФИЗИКА: «ҚЫСЫМ» ТАҚЫРЫБЫНА СОР</h1>", unsafe_allow_html=True)
 
 if st.session_state.submitted:
     st.balloons()
-    st.success("🎉 Твоя работа успешно принята! Дождись проверки учителем или найди результат ниже.")
-    if st.button("Начать заново 🔄"):
+    st.success("🎉 Жауаптарың сәтті қабылданды! Төмендегі іздеу бөлімінен нәтижені біле аласың.")
+    if st.button("Қайта бастау 🔄"):
         st.session_state.submitted = False
         st.rerun()
 else:
-    st.info("ℹ️ **Инструкция:** Внимательно прочитайте вопросы и дайте ответ. Все поля обязательны к заполнению. Максимальный балл: 20.")
+    st.warning("⚠️ **Нұсқаулық:** Жауаптарды мұқият жазыңыз. Есептердің шығарылу жолын көрсету баллды арттырады. Басқа терезеге өтпеңіз!")
     
     col1, col2 = st.columns(2)
     with col1:
-        name = st.text_input("👤 Имя и фамилия ученика:", placeholder="Например: Иванов Иван")
+        name = st.text_input("👤 Оқушының аты-жөні:", placeholder="Мысалы: Асқаров Нұрлан")
     with col2:
-        s_class = st.selectbox("🏫 Ваш класс:", ["8 А", "8 Б", "8 В", "8 Г"])
+        s_class = st.selectbox("🏫 Сыныбыңыз:", ["8 А", "8 Б", "8 В", "8 Г"])
 
     if name:
         # ANTI-CHEAT JS
@@ -57,8 +56,8 @@ else:
                         student_name: "{name}",
                         student_class: "{s_class}",
                         status: "cheated",
-                        answers: {{ "lang": "ru" }}, // Метка языка внутри JSON
-                        ai_feedback: "🚫 РАБОТА АННУЛИРОВАНА: Сработал анти-чит (переход в другое окно)."
+                        answers: {{ "lang": "kz" }},
+                        ai_feedback: "🚫 ЖҰМЫС ЖОЙЫЛДЫ: Анти-чит жүйесі басқа бетке өткеніңізді анықтады."
                     }};
                     fetch('{URL}/rest/v1/{TABLE_NAME}', {{
                         method: 'POST',
@@ -73,55 +72,59 @@ else:
             </script>
         """, height=0)
 
-        with st.form("exam_8_physics_ru"):
-            st.subheader("📍 РАЗДЕЛ А: Тестовые задания (10 баллов)")
-            q1 = st.radio("1. В каких единицах измеряется внутренняя энергия?", ["A) Ватт", "B) Джоуль", "C) Ньютон", "D) Паскаль"], index=None)
-            q2 = st.radio("2. Какой вид теплопередачи возможен в вакууме?", ["A) Конвекция", "B) Теплопроводность", "C) Излучение", "D) Диффузия"], index=None)
-            q3 = st.radio("3. Какова температура кипения воды при нормальных условиях?", ["A) 0°C", "B) 80°C", "C) 100°C", "D) 273°C"], index=None)
-            q4 = st.radio("4. Формула первого закона термодинамики:", ["A) Q = ΔU + A", "B) Q = cmΔt", "C) η = A/Q", "D) pV = nRT"], index=None)
-            q5 = st.radio("5. Как меняется температура жидкости при испарении?", ["A) Повышается", "B) Понижается", "C) Не меняется", "D) Сначала растет"], index=None)
-            q6 = st.radio("6. Чему равен элементарный электрический заряд?", ["A) 1.6 * 10^-19 Кл", "B) 9 * 10^9 Кл", "C) 1.6 * 10^-31 Кл", "D) 1 Кл"], index=None)
-            q7 = st.radio("7. Как взаимодействуют одноименные заряды (+ и +)?", ["A) Притягиваются", "B) Отталкиваются", "C) Не взаимодействуют", "D) Нейтрализуются"], index=None)
-            q8 = st.radio("8. Прибор для обнаружения электрического заряда:", ["A) Термометр", "B) Барометр", "C) Электроскоп", "D) Спидометр"], index=None)
-            q9 = st.radio("9. Формула закона Кулона:", ["A) F = ma", "B) F = k*q1*q2/r^2", "C) F = mg", "D) E = F/q"], index=None)
-            q10 = st.radio("10. Какой заряд получает стеклянная палочка при трении о шелк?", ["A) Отрицательный (-)", "B) Положительный (+)", "C) Нейтральный (0)", "D) Сначала положительный"], index=None)
+        with st.form("physics_exam_kz"):
+            
+            st.markdown("### 📝 ТАПСЫРМАЛАР:")
 
-            st.subheader("📍 РАЗДЕЛ В: Краткие ответы (6 баллов)")
-            q11 = st.text_area("11. Почему металлическая ложка кажется холоднее деревянной?", height=70)
-            q12 = st.text_area("12. Как изменится сила Кулона, если расстояние между двумя зарядами увеличить в 3 раза?", height=70)
+            # 1-есеп
+            st.markdown("<div class='question-box'><b>1. Массасы 50 кг баланың еденге түсіретін қысымын табыңыз.</b> Оның екі бәтеңкесінің табанының ауданы 250 см². (Ескерту: см²-ты м²-қа айналдыру: 250 / 10 000).</div>", unsafe_allow_html=True)
+            q1 = st.text_area("Шешуі мен жауабы (Паскальмен):", key="q1")
 
-            st.subheader("📍 РАЗДЕЛ С: Решение задачи (4 балла)")
-            q13 = st.text_area("13. Задача: r = 10 см, q1 = 2*10^-7 Кл, q2 = 5*10^-7 Кл. Найдите силу взаимодействия (F):", height=100)
+            # 2-есеп
+            st.markdown("<div class='question-box'><b>2. Неліктен шаңғымен қардың үстінде жүргенде адам батып кетпейді, ал жай аяқ киіммен батып кетеді?</b> Физикалық тұрғыдан түсіндіріңіз.</div>", unsafe_allow_html=True)
+            q2 = st.text_area("Түсіндірмеңіз:", key="q2")
 
-            submit_btn = st.form_submit_button("ЗАВЕРШИТЬ РАБОТУ ✅")
+            # 3-есеп
+            st.markdown("<div class='question-box'><b>3. Тік бұрышты параллелепипед пішінді кірпіштің қырлары 5 см, 10 см және 20 см.</b> Кірпіш қай жағымен жатқанда ең аз қысым түсіреді? Ең көп қысым ше?</div>", unsafe_allow_html=True)
+            q3 = st.text_area("Жауабыңыз бен себебі:", key="q3")
+
+            # 4-есеп
+            st.markdown("<div class='question-box'><b>4. Тереңдігі 5 метр болатын бассейннің түбіндегі судың қысымын есептеңіз.</b> (Судың тығыздығы ρ = 1000 кг/м³; g ≈ 10 Н/кг).</div>", unsafe_allow_html=True)
+            q4 = st.text_area("Шешуі мен жауабы:", key="q4")
+
+            # 5-есеп
+            st.markdown("<div class='question-box'><b>5. Гидравликалық престің кіші поршенінің ауданы 2 см², үлкенінікі 100 см².</b> Кіші поршеньге 50 Н күш түсірілсе, үлкен поршень қандай күшпен көтеріледі?</div>", unsafe_allow_html=True)
+            q5 = st.text_area("Есептелу жолы мен жауабы (Ньютонмен):", key="q5")
+
+            submit_btn = st.form_submit_button("ЖҰМЫСТЫ ТАПСЫРУ ✅")
 
             if submit_btn:
                 if not name or len(name) < 3:
-                    st.error("❌ Пожалуйста, введите имя и фамилию!")
+                    st.error("❌ Аты-жөніңізді жазыңыз!")
                 else:
                     all_answers = {
-                        "lang": "ru", # Тілді осында жасырдық (баған қосудың қажеті жоқ)
-                        "section_a": [q1, q2, q3, q4, q5, q6, q7, q8, q9, q10],
-                        "section_b": {"q11": q11, "q12": q12},
-                        "section_c": {"q13": q13}
+                        "lang": "kz",
+                        "questions": {
+                            "1": q1, "2": q2, "3": q3, "4": q4, "5": q5
+                        }
                     }
                     payload = {
                         "student_name": name, 
                         "student_class": s_class,
                         "answers": all_answers,
-                        "status": "pending"  # ОРЫСША СТАТУС (Воркер үшін маңызды)
+                        "status": "pending"
                     }
                     resp = send_data(payload)
                     if resp.status_code in [200, 201, 204]:
                         st.session_state.submitted = True
                         st.rerun()
                     else:
-                        st.error(f"⚠️ Ошибка базы данных: {resp.text}")
+                        st.error(f"⚠️ Қате: {resp.text}")
 
-# --- 4. ПОИСК РЕЗУЛЬТАТА ---
+# --- 4. НӘТИЖЕНІ ІЗДЕУ ---
 st.markdown("---")
-st.markdown("### 🔎 Проверить результат")
-search_query = st.text_input("Введите имя:", key="search_input")
+st.markdown("### 🔎 Нәтижеңді тексер")
+search_query = st.text_input("Есіміңді жаз (Мысалы: Асқаров):", key="search_input")
 
 if search_query:
     s_headers = {"apikey": KEY, "Authorization": f"Bearer {KEY}"}
@@ -134,14 +137,14 @@ if search_query:
                 with st.container():
                     st.markdown(f"#### 👤 {data['student_name']} ({data['student_class']})")
                     if data['status'] == 'cheated':
-                        st.error("🚫 Работа аннулирована: Сработал анти-чит.")
-                    elif data['status'] == 'pending': # Осы жерін өзгерттік
-                        st.warning("⏳ Твоя работа еще проверяется...")
+                        st.error("🚫 Жұмыс жойылды: Анти-чит жүйесі іске қосылған.")
+                    elif data['status'] == 'pending':
+                        st.warning("⏳ Мұғалім әлі тексерген жоқ. Күте тұрыңыз...")
                     else:
                         col_score, col_fb = st.columns([1, 3])
                         with col_score:
-                            st.metric("Общий балл", f"{data.get('score', 0)} / 20")
+                            st.metric("Жиналған балл", f"{data.get('score', 0)} / 20")
                         with col_fb:
-                            with st.expander("📝 Отзыв учителя (AI)", expanded=True):
-                                st.write(data.get('ai_feedback', 'Отзыв готовится...'))
+                            with st.expander("📝 Мұғалімнің пікірі мен талдауы (AI)", expanded=True):
+                                st.write(data.get('ai_feedback', 'Талдау жасалуда...'))
                     st.markdown("<br>", unsafe_allow_html=True)
